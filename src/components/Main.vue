@@ -1,6 +1,6 @@
 <template>
     <div class="main">
-        <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal">
+        <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" :router="true">
             <el-menu-item index="goods">
                 <template slot="title">
                     <i class="el-icon-goods"></i>
