@@ -1,5 +1,5 @@
 <template>
-    <div class="main">
+    <div class="main" v-loading="this.$store.state.isRequesting">
         <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" :router="true">
             <el-menu-item index="goods">
                 <template slot="title">
@@ -14,6 +14,7 @@
                 </template>
             </el-menu-item>
         </el-menu>
+        <p v-show="isError">出错了</p>
         <keep-alive>
             <router-view></router-view>
         </keep-alive>
@@ -22,11 +23,28 @@
 <script>
 export default {
     data() {
-        return {};
+        return {
+            // isError: this.$store.state.isError,
+        };
+    },
+    mounted() {
+        // console.log(this.$store.state.isError);
     },
     computed: {
         activeIndex() {
             return this.$route.path.replace('/', '');
+        },
+        isError() {
+            return this.$store.state.isError;
+        }
+    },
+    watch: {
+        isError(newVal) {
+            if (newVal) {
+                this.tipError('服务器出错啦T.T');
+                //  显示完后重置为false
+                this.$store.dispatch('setIsError', false);
+            }
         }
     }
 };
