@@ -58,7 +58,6 @@ export default {
     },
     methods: {
         async addGood() {
-            alert(2);
             this.loading = true;
             const res = await addGood(this.form);
             this.loading = false;
