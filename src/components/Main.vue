@@ -1,34 +1,61 @@
 <template>
     <div class="main" v-loading="this.$store.state.isRequesting">
-        <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" :router="true">
-            <el-menu-item index="goods">
-                <template slot="title">
-                    <i class="el-icon-goods"></i>
-                    <span>库存列表</span>
-                </template>
-            </el-menu-item>
-            <el-menu-item index="addGood">
-                <template slot="title">
-                    <i class="el-icon-circle-plus"></i>
-                    <span>添加商品</span>
-                </template>
-            </el-menu-item>
-        </el-menu>
-        <p v-show="isError">出错了</p>
-        <keep-alive>
-            <router-view></router-view>
-        </keep-alive>
+        <h3>
+            <i class="el-icon-menu"> </i> 舜新建材公司库存管理系统</h3>
+        <span class="line"></span>
+        <div v-show="pass">
+            <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" :router="true">
+                <el-menu-item index="goods">
+                    <template slot="title">
+                        <i class="el-icon-goods"></i>
+                        <span>库存列表</span>
+                    </template>
+                </el-menu-item>
+                <el-menu-item index="addGood">
+                    <template slot="title">
+                        <i class="el-icon-circle-plus"></i>
+                        <span>添加商品</span>
+                    </template>
+                </el-menu-item>
+            </el-menu>
+            <p v-show="isError">出错了</p>
+            <keep-alive>
+                <router-view></router-view>
+            </keep-alive>
+        </div>
     </div>
 </template>
 <script>
 export default {
     data() {
         return {
+            pass: false
             // isError: this.$store.state.isError,
         };
     },
     mounted() {
         // console.log(this.$store.state.isError);
+        this.openPass();
+    },
+    methods: {
+        openPass() {
+            this.$prompt('请输入管理员密码', '验证', {
+                confirmButtonText: '确定',
+                inputType: 'password'
+            })
+                .then(({ value }) => {
+                    if (value == 'lly') {
+                        this.tipSuccess('登录成功');
+                        this.pass = true;
+                    } else {
+                        this.openPass();
+                        this.tipError('密码错误');
+                    }
+                })
+                .catch(() => {
+                    this.openPass();
+                });
+        }
     },
     computed: {
         activeIndex() {

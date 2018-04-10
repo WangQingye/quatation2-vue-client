@@ -1,7 +1,7 @@
 <template>
     <div class="add-good">
         <h3>商品添加</h3>
-        <el-form ref="form" :model="form" label-width="40px" class="add-form">
+        <el-form ref="form" :model="form" :rules="rules" label-width="60px" class="add-form" label-position="left" size="small">
             <el-form-item label="图片">
                 <!-- <el-button type="success" icon="el-icon-picture" circle></el-button> -->
                 <!-- <input id="img" style="margin-top:15px" accept="image/png,image/jpg" type="file"> -->
@@ -12,7 +12,7 @@
                     </el-upload>
                 </div>
             </el-form-item>
-            <el-form-item label="名称">
+            <el-form-item label="名称" prop="name">
                 <el-input v-model="form.name" placeholder="例：凹形管"></el-input>
             </el-form-item>
             <el-form-item label="品类">
@@ -50,6 +50,11 @@ export default {
                 nowStock: 0,
                 note: '',
                 img: ''
+            },
+            rules: {
+                name: [
+                    { required: true, message: '必须输入商品名称哦', trigger: 'blur' }
+                ]
             }
         };
     },
@@ -58,15 +63,23 @@ export default {
     },
     methods: {
         async addGood() {
-            this.loading = true;
-            const res = await addGood(this.form);
-            this.loading = false;
-            if (res.meta) {
-                this.tipSuccess('添加成功');
-                this.resetForm();
-            } else {
-                this.tipError(res.msg);
-            }
+            this.$refs.form.validate(async valid => {
+                if (valid) {
+                    this.loading = true;
+                    const res = await addGood(this.form);
+                    this.loading = false;
+                    if (res.meta) {
+                        this.tipSuccess('添加成功');
+                        this.resetForm();
+                    } else {
+                        this.tipError(res.msg);
+                    }
+                } else {
+                    this.tipError('商品信息还有误哦');
+                    console.log(222);
+                    return;
+                }
+            });
         },
         onImgChange(file, fileList) {
             // 读出 base64
@@ -97,9 +110,6 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-    text-align: left;
-}
 .add-good {
     margin-top: 1rem;
 }
@@ -120,14 +130,14 @@ h3 {
 .avatar-uploader-icon {
     font-size: 28px;
     color: #8c939d;
-    width: 178px;
-    height: 178px;
-    line-height: 178px;
+    width: 120px;
+    height: 120px;
+    line-height: 120px;
     text-align: center;
 }
 .avatar {
-    width: 178px;
-    height: 178px;
+    width: 120px;
+    height: 120px;
     display: block;
 }
 </style>

@@ -7,79 +7,68 @@
                 </el-option>
             </el-select>
         </div>
-        <div class="list-area">
-            <el-card class="box-card my-card" shadow="never">
-                <p>名称：二极管</p>
-                <p>规格：39mm</p>
-                <p>类别：管材</p>
-                <p>价格：100元/m</p>
-                <p>备注：这是非常优质的管材</p>
-            </el-card>
-            <el-card class="box-card my-card" shadow="never">
-                <p>名称：二极管</p>
-                <p>规格：39mm</p>
-                <p>类别：管材</p>
-                <p>价格：100元/m</p>
-                <p>备注：这是非常优质的管材</p>
-            </el-card>
-            <el-card class="box-card my-card" shadow="never">
-                <p>名称：二极管</p>
-                <p>规格：39mm</p>
-                <p>类别：管材</p>
-                <p>价格：100元/m</p>
-                <p>备注：这是非常优质的管材</p>
-            </el-card>
-            <el-card class="box-card my-card" shadow="never">
-                <p>名称：二极管</p>
-                <p>规格：39mm</p>
-                <p>类别：管材</p>
-                <p>价格：100元/m</p>
-                <p>备注：这是非常优质的管材</p>
-            </el-card>
-            <el-card class="box-card my-card" shadow="never">
-                <p>名称：二极管</p>
-                <p>规格：39mm</p>
-                <p>类别：管材</p>
-                <p>价格：100元/m</p>
-                <p>备注：这是非常优质的管材</p>
-            </el-card>
-        </div>
+        <ul class="list-area">
+            <li v-for="(good,index) in goods" :key="index" class="">
+                <img :src="good.img || noImg" alt="" class="good-img">
+                <div class="good-text">
+                    <p class="good-name">{{good.name}}
+                        <span>
+                            {{good.category}}</span>
+                    </p>
+                    <p class="good-stock">当前库存：
+                        <span>{{good.nowStock}}</span>
+                    </p>
+                    <span class="good-price">价格: {{good.price}}</span>
+                    <span class="good-format"> 规格: {{good.format}}</span>
+                </div>
+                <el-button class="good-button" type="text" @click="showGoodDetail = true">操作</el-button>
+            </li>
+        </ul>
+        <good-detail :show="showGoodDetail" @close="showGoodDetail = false"></good-detail>
     </div>
 </template>
 <script>
+import { getAllGoods } from '../config/api';
+import { noImgSrc } from '../config/env';
+import GoodDetail from './GoodDetail.vue';
 export default {
     data() {
         return {
-            options: [
-                {
-                    value: '选项1',
-                    label: '黄金糕'
-                },
-                {
-                    value: '选项2',
-                    label: '双皮奶'
-                },
-                {
-                    value: '选项3',
-                    label: '蚵仔煎'
-                },
-                {
-                    value: '选项4',
-                    label: '龙须面'
-                },
-                {
-                    value: '选项5',
-                    label: '北京烤鸭'
-                }
-            ],
-            value4: ''
+            options: [],
+            goods: [],
+            value4: '',
+            noImg: noImgSrc,
+            showGoodDetail: false
         };
-    }
+    },
+    created() {
+        this.getAllGoods();
+    },
+    methods: {
+        async getAllGoods() {
+            let res = await getAllGoods();
+            console.log(res);
+            if (res.goods) {
+                this.goods = res.goods;
+            }
+        }
+    },
+    components: { GoodDetail }
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+body,
+div,
+ul,
+li,
+p,
+blockquote,
+img {
+    padding: 0;
+    margin: 0;
+}
 .select-area {
     margin: 1rem 1rem;
 }
@@ -90,5 +79,61 @@ export default {
     margin: 0;
     display: inline-block;
     width: 40%;
+}
+.list-area {
+    list-style-type: none;
+    width: 350px;
+    margin: 0 auto;
+}
+.list-area li {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+.good-img {
+    width: 90px;
+    height: 90px;
+    border-radius: 15px;
+    margin-right: 6px;
+}
+.good-text {
+    width: 100%;
+    height: 90px;
+    text-align: left;
+    padding-left: 10px;
+    color: #777;
+    border-bottom: 1px solid #eee;
+}
+.good-name {
+    font-size: 18px;
+    color: #333;
+    font-weight: 600;
+}
+.good-name span {
+    color: #777;
+    font-size: 12px;
+    width: 100%;
+    text-align: right;
+}
+.good-stock {
+    margin: 8px 0;
+    font-size: 14px;
+}
+.good-stock span {
+    font-size: 15px;
+    color: #333;
+}
+.good-format,
+.good-price {
+    font-size: 12px;
+}
+.good-price {
+    margin-right: 3px;
+}
+.good-button {
+    margin-right: 10px;
+    height: 90px;
+    border-bottom: 1px solid #eee;
+    border-radius: 0;
 }
 </style>
