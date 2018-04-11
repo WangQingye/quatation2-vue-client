@@ -19,19 +19,19 @@
                     <span>{{form.nowStock}}</span>
                 </el-form-item>
                 <el-form-item label="本次操作" class="form-item">
-                    <el-select v-model="manageForm.opType" placeholder="请选择活动区域">
-                        <el-option label="出库" value="0"></el-option>
-                        <el-option label="入库" value="1"></el-option>
+                    <el-select @change="handleOpNumChange" v-model="manageForm.opType" placeholder="请选择活动区域">
+                        <el-option value="出库">出库</el-option>
+                        <el-option value="入库">入库</el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="变动数量" class="form-item">
-                    <el-input-number v-model="manageForm.opNum" :min="1" label="库存"></el-input-number>
+                    <el-input-number v-model="manageForm.opNum" :min="0" :max="manageForm.opType == '出库' ? form.nowStock : 9999999999999" label="库存" @change="handleOpNumChange"></el-input-number>
                 </el-form-item>
                 <el-form-item label="变动后库存" class="form-item">
-                    <span>{{form.nowStock}}</span>
+                    <span>{{manageForm.afterOpNum}}</span>
                 </el-form-item>
                 <el-form-item label="操作说明：" class="form-item">
-                    <el-input type="textarea" v-model="form.note" placeholder="例：供货给东南建筑公司"></el-input>
+                    <el-input type="textarea" v-model="manageForm.note" placeholder="例：供货给东南建筑公司"></el-input>
                 </el-form-item>
                 <el-form-item class="form-item">
                     <el-button type="primary" @click="submitManage">确认修改</el-button>
@@ -63,7 +63,7 @@
                     <el-input v-model="form.price" placeholder="例：100元/m"></el-input>
                 </el-form-item>
                 <el-form-item label="库存" class="form-item">
-                    <el-input-number v-model="form.nowStock" :min="1" label="库存"></el-input-number>
+                    <span>{{form.nowStock}}</span>
                 </el-form-item>
                 <el-form-item label="备注" class="form-item">
                     <el-input type="textarea" v-model="form.note" placeholder=""></el-input>
@@ -77,8 +77,11 @@
             <div v-show="hisShow">
                 <p>
                     <i class="el-icon-tickets"></i>库存操作记录</p>
-                <el-table :data="tableData" style="width: 100%" max-height="350" stripe size="small" :fit='false'>
+                <el-table :data="hisData" style="width: 100%" max-height="350" stripe size="small" :fit='false'>
                     <el-table-column prop="date" label="操作日期" width="100" align="center">
+                        <template slot-scope="props">
+                            <span>{{props.row.meta.createdAt.slice(0,10)}}</span>
+                        </template>
                     </el-table-column>
                     <el-table-column prop="opType" label="类型" width="80" align="center">
                         <template slot-scope="props">
@@ -86,10 +89,13 @@
                         </template>
                     </el-table-column>
                     <el-table-column prop="opNum" label="变动数量" width="80" align="center">
-                    </el-table-column>
-                    <el-table-column prop="afterOpNum" label="操作后剩余" width="100" align="center">
+                        <template slot-scope="props">
+                            <span>{{props.row.opType ? '+' : '-'}}{{props.row.opNum}}</span>
+                        </template>
                     </el-table-column>
                     <el-table-column prop="note" label="操作说明" width="150" align="center">
+                    </el-table-column>
+                    <el-table-column prop="afterOpNum" label="操作后剩余" width="100" align="center">
                     </el-table-column>
                 </el-table>
                 <el-button type="primary" @click="backToMain" style="margin-top:20px">返回</el-button>
@@ -106,57 +112,28 @@
     </div>
 </template>
 <script>
+import { changeGood, delGood, manageGood, getOneGoodHis } from '../config/api';
 export default {
     data() {
         return {
             form: {
-                name: 'dasdas',
-                category: 'dsadas',
-                format: 'dasdas',
-                price: 'dasdas',
+                name: '空',
+                category: '空',
+                format: '空',
+                price: '空',
                 nowStock: 0,
-                note: 'dsadas',
-                img: ''
+                note: '',
+                img: '',
+                _id: ''
             },
-            changeForm: {},
             manageForm: {
-                name: '',
-                opType: 0,
+                opType: '出库',
                 opNum: 0,
                 afterOpNum: 0,
                 note: '',
                 goodId: ''
             },
-            tableData: [
-                {
-                    date: '2016-05-02',
-                    opType: 0,
-                    opNum: 200,
-                    afterOpNum: 100,
-                    note: '供货给东南建筑公司'
-                },
-                {
-                    date: '2016-05-02',
-                    opType: 0,
-                    opNum: 200,
-                    afterOpNum: 100,
-                    note: '供货给东南建筑公司'
-                },
-                {
-                    date: '2016-05-02',
-                    opType: 0,
-                    opNum: 200,
-                    afterOpNum: 100,
-                    note: '供货给东南建筑公司'
-                },
-                {
-                    date: '2016-05-02',
-                    opType: 0,
-                    opNum: 200,
-                    afterOpNum: 100,
-                    note: '供货给东南建筑公司'
-                }
-            ],
+            hisData: [],
             rules: {
                 name: [
                     { required: true, message: '必须输入商品名称哦', trigger: 'blur' }
@@ -184,8 +161,62 @@ export default {
         // console.log(this.$store.state.isError);
     },
     methods: {
-        submitChange() {},
-        submitManage() {},
+        async submitChange() {
+            console.log(this.form);
+            let res = await changeGood(this.form);
+            console.log(res.meta);
+            if (res.meta) {
+                this.tipSuccess('修改成功');
+                this.$emit('refreshGoodList');
+            }
+        },
+        /* 删除商品 */
+        async delGood() {
+            this.$confirm('本次操作将彻底删除该商品的一切信息，是否确认？', '确认操作', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            })
+                .then(async () => {
+                    let res = await delGood({ id: this.good._id });
+                    if (res.meta) {
+                        this.tipSuccess('删除成功');
+                        this.$emit('refreshGoodList');
+                        this.close();
+                    }
+                })
+                .catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消操作'
+                    });
+                });
+        },
+        async submitManage() {
+            let res = await manageGood({
+                opType: this.manageForm.opType == '出库' ? 0 : 1,
+                opNum: this.manageForm.opNum,
+                afterOpNum: this.manageForm.afterOpNum,
+                note: this.manageForm.note,
+                goodId: this.good._id
+            });
+            if (res.meta) {
+                this.tipSuccess('操作成功');
+                this.form.nowStock = this.manageForm.afterOpNum;
+                this.$emit('refreshGoodList');
+                this.backToMain();
+                this.getGoodHis();
+                this.manageForm.opType = '出库';
+                this.manageForm.opNum = 0;
+                this.manageForm.note = '';
+            }
+        },
+        async getGoodHis() {
+            let res = await getOneGoodHis({
+                id: this.good._id
+            });
+            if (res) this.hisData = res.ops;
+        },
         onImgChange(file, fileList) {
             // 读出 base64
             var reader = new FileReader();
@@ -198,6 +229,16 @@ export default {
         onImgRemove() {
             this.form.img = '';
         },
+        /* 变动数量联动处理 */
+        handleOpNumChange() {
+            if (this.manageForm.opType == '出库') {
+                this.manageForm.afterOpNum =
+                    this.form.nowStock - this.manageForm.opNum;
+            } else {
+                this.manageForm.afterOpNum =
+                    this.form.nowStock + this.manageForm.opNum;
+            }
+        },
         backToMain() {
             this.opsShow = true;
             this.formShow = false;
@@ -207,28 +248,19 @@ export default {
         clickOps(block) {
             this[block] = true;
             this.opsShow = false;
-        },
-        delGood() {
-            this.$confirm('本次操作将彻底删除该商品的一切信息，是否确认？', '确认操作', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'info'
-            })
-                .then(() => {
-                    this.$message({
-                        type: 'success',
-                        message: '删除成功!'
-                    });
-                })
-                .catch(() => {
-                    this.$message({
-                        type: 'info',
-                        message: '已取消操作'
-                    });
-                });
+            if (block == 'hisShow' && !this.hisData.length) this.getGoodHis();
         },
         close() {
+            this.backToMain();
             this.$emit('close');
+        }
+    },
+    watch: {
+        good() {
+            this.form = JSON.parse(JSON.stringify(this.good));
+            this.manageForm.afterOpNum = this.good.nowStock;
+            /* 更换了商品需要重置数据 */
+            this.hisData = [];
         }
     },
     computed: {}

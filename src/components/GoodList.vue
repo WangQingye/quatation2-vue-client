@@ -21,16 +21,17 @@
                     <span class="good-price">价格: {{good.price}}</span>
                     <span class="good-format"> 规格: {{good.format}}</span>
                 </div>
-                <el-button class="good-button" type="text" @click="showGoodDetail = true">操作</el-button>
+                <el-button class="good-button" type="text" @click="showOps(good)">操作</el-button>
             </li>
         </ul>
-        <good-detail :show="showGoodDetail" @close="showGoodDetail = false"></good-detail>
+        <good-detail :show="showGoodDetail" @close="showGoodDetail = false" :good="nowGood" @refreshGoodList="getAllGoods"></good-detail>
     </div>
 </template>
 <script>
 import { getAllGoods } from '../config/api';
 import { noImgSrc } from '../config/env';
 import GoodDetail from './GoodDetail.vue';
+import Bus from '../util/bus';
 export default {
     data() {
         return {
@@ -38,11 +39,13 @@ export default {
             goods: [],
             value4: '',
             noImg: noImgSrc,
-            showGoodDetail: false
+            showGoodDetail: false,
+            nowGood: {} //当前正在操作的商品
         };
     },
     created() {
         this.getAllGoods();
+        Bus.$on('refreshGoodList', this.getAllGoods);
     },
     methods: {
         async getAllGoods() {
@@ -51,6 +54,11 @@ export default {
             if (res.goods) {
                 this.goods = res.goods;
             }
+        },
+        /* 展示某产品的操作界面 */
+        showOps(good) {
+            this.showGoodDetail = true;
+            this.nowGood = good;
         }
     },
     components: { GoodDetail }

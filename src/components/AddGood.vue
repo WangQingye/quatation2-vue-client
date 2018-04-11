@@ -39,6 +39,7 @@
 </template>
 <script>
 import { addGood } from '../config/api';
+import Bus from '../util/bus';
 export default {
     data() {
         return {
@@ -70,13 +71,13 @@ export default {
                     this.loading = false;
                     if (res.meta) {
                         this.tipSuccess('添加成功');
+                        Bus.$emit('refreshGoodList');
                         this.resetForm();
                     } else {
                         this.tipError(res.msg);
                     }
                 } else {
                     this.tipError('商品信息还有误哦');
-                    console.log(222);
                     return;
                 }
             });
@@ -86,7 +87,6 @@ export default {
             var reader = new FileReader();
             reader.readAsDataURL(file.raw);
             reader.onloadend = () => {
-                console.log(reader.result);
                 this.form.img = reader.result;
             };
         },

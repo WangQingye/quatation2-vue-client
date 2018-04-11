@@ -11,4 +11,4 @@ export const changeGood = data => fetch('/goods', data, 'PUT');
 // 操作库存
 export const manageGood = data => fetch('/goods/manage', data, 'POST');
 // 获取单个商品的操作记录
-export const getOneGoodHis = data => fetch('/goods/manage', data);
+export const getOneGoodHis = data => fetch('/record', data);

@@ -7,7 +7,7 @@ export default async (url = '', data = {}, type = 'GET', method = 'fetch') => {
     type = type.toUpperCase();
     url = baseUrl + url;
 
-    if (type == 'GET') {
+    if (type == 'GET' || type == 'DELETE') {
         let dataStr = ''; // 准备拼接请求字符串
         Object.keys(data).forEach(key => {
             dataStr += key + '=' + data[key] + '&';
@@ -27,10 +27,10 @@ export default async (url = '', data = {}, type = 'GET', method = 'fetch') => {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            cache: 'force-cache'
+            cache: 'no-cache'
         }
 
-        if (type == 'POST') {
+        if (type == 'POST' || type == 'PUT') {
             Object.defineProperty(requestConfig, 'body', {
                 // value: 'account=admin&pass=123456'
                 value: JSON.stringify(data)
