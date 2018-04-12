@@ -35,8 +35,8 @@ export default {
     },
     mounted() {
         // console.log(this.$store.state.isError);
-        // this.openPass();
-        this.pass = true;
+        this.openPass();
+        // this.pass = true;
     },
     methods: {
         openPass() {
