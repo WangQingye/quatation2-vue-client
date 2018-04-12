@@ -10,11 +10,9 @@ const state = {
 
 const mutations = {
     saveIsRequesting(state, isRequesting) {
-        console.log('saveisRequesting');
         state.isRequesting = isRequesting;
     },
     saveIsError(state, isError) {
-        console.log('saveisError');
         state.isError = isError;
     },
 }

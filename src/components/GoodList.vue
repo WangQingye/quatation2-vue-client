@@ -2,13 +2,13 @@
     <div class="good-list">
         <div class="select-area">
             <span style="margin-right:1rem">种类筛选</span>
-            <el-select v-model="value4" clearable placeholder="请选择">
-                <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+            <el-select v-model="filterTag" clearable placeholder="请选择" @change="handleFilter">
+                <el-option v-for="(item,index) in options" :key="index" :label="item" :value="item">
                 </el-option>
             </el-select>
         </div>
         <ul class="list-area">
-            <li v-for="(good,index) in goods" :key="index" class="">
+            <li v-for="(good,index) in showGoods" :key="index" class="">
                 <img :src="good.img || noImg" alt="" class="good-img">
                 <div class="good-text">
                     <p class="good-name">{{good.name}}
@@ -28,7 +28,7 @@
     </div>
 </template>
 <script>
-import { getAllGoods } from '../config/api';
+import { getAllGoods, getCategory } from '../config/api';
 import { noImgSrc } from '../config/env';
 import GoodDetail from './GoodDetail.vue';
 import Bus from '../util/bus';
@@ -36,8 +36,9 @@ export default {
     data() {
         return {
             options: [],
-            goods: [],
-            value4: '',
+            goods: [], // 从服务器获取的数据
+            showGoods: [], // 正在展示的数据（用于筛选）
+            filterTag: '',
             noImg: noImgSrc,
             showGoodDetail: false,
             nowGood: {} //当前正在操作的商品
@@ -49,16 +50,29 @@ export default {
     },
     methods: {
         async getAllGoods() {
-            let res = await getAllGoods();
-            console.log(res);
+            const res = await getAllGoods();
+            const category = await getCategory();
             if (res.goods) {
                 this.goods = res.goods;
+                this.showGoods = res.goods;
+            }
+            if (category.categorys) {
+                this.options = category.categorys;
             }
         },
         /* 展示某产品的操作界面 */
         showOps(good) {
             this.showGoodDetail = true;
             this.nowGood = good;
+        },
+        handleFilter(option) {
+            if (!option) {
+                this.showGoods = this.goods;
+            } else {
+                this.showGoods = this.goods.filter(good => {
+                    return good.category == option;
+                });
+            }
         }
     },
     components: { GoodDetail }
@@ -70,8 +84,7 @@ export default {
 body,
 div,
 ul,
-li,
-p,
+/* li, */ p,
 blockquote,
 img {
     padding: 0;

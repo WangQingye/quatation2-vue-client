@@ -1,7 +1,8 @@
 import fetch from './fetch'
-// import axios from 'axios'
 // 获取商品列表
 export const getAllGoods = () => fetch('/goods');
+// 获取商品种类
+export const getCategory = () => fetch('/goods/category');
 // 添加一个商品
 export const addGood = data => fetch('/goods', data, 'POST');
 // 删除一个商品

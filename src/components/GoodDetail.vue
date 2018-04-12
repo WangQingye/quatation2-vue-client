@@ -167,6 +167,7 @@ export default {
             console.log(res.meta);
             if (res.meta) {
                 this.tipSuccess('修改成功');
+                this.backToMain();
                 this.$emit('refreshGoodList');
             }
         },
